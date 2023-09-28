@@ -1,0 +1,11 @@
+{
+    "name": "express",
+    "description": "express",
+    "version": "0.0.1",
+    "private": true,
+    "dependencies": {
+        "cors": "^2.8.5",
+        "express": "4.x",
+        "minio": "^7.1.3"
+    }
+}
