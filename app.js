@@ -1,8 +1,12 @@
 const Minio = require('minio');
 const cors = require('cors');
+const dotenv = require('dotenv');
+
+dotenv.config({path: './.env'});
+
 var client = new Minio.Client({
     endPoint: process.env.ENDPOINT,
-    port: process.env.MINIO_PORT,
+    port: parseInt(process.env.MINIO_PORT),
     useSSL: false,
     accessKey: process.env.ACCESSKEY,
     secretKey: process.env.SECRETKEY,
