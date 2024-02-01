@@ -1,6 +1,10 @@
 const Minio = require('minio');
 const cors = require('cors');
 const dotenv = require('dotenv');
+const multipart = require('connect-multiparty');
+const docxs = require('./docx');
+
+const multipartMiddleware = multipart();
 
 dotenv.config({path: './.env'});
 
@@ -22,7 +26,8 @@ server.get('/presignedPutUrl', (req, res) => {
         if (err) throw err
         res.end(url)
     })
-})
+});
+
 
 server.get('/presignedGetUrl', (req, res) => {
     // console.log('req:',req.query.name);
@@ -30,10 +35,24 @@ server.get('/presignedGetUrl', (req, res) => {
         if (err) throw err
         res.end(url)
     })
-})
+});
 
 server.get('/', (req, res) => {
     res.sendFile(__dirname + '/index.html');
-})
+});
+
+server.post('/generateDocument', multipartMiddleware, (req, res) => {
+    docxs.generateDocument(req.body, (buffer)=>{
+        const filePath = `docx/${Date.now()}_${req.body.contract_name}.docx`;
+        client.putObject('laravel', filePath, buffer)
+            .catch((err) => {
+                console.log('err:', err);
+            })
+        console.log(filePath);
+        res.writeHead(200, {'Content-Type': 'text/html;charset=utf-8'});
+        res.end(filePath);
+    });
+    
+});
 
 server.listen(process.env.PORT);
