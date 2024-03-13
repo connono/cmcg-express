@@ -1,9 +1,9 @@
 const fs = require("fs");
 const docx = require("docx");
-const binconv = require("binconv");
 const { patchDocument, PatchType, TextRun, CheckBox } = docx;
 
 exports.generateDocument = (data, callback) => {
+    console.log(data);
     const sourceArray = ['自筹资金', '财政拨款', '专项资金', '学科经费', '名医工作室'];
     const patches = {
         contract_name: {
@@ -77,6 +77,12 @@ exports.generateDocument = (data, callback) => {
                 new TextRun("否"),
             ]
         },
+        comment: {
+            type: PatchType.PARAGRAPH,
+            children: [
+                new TextRun(data.comment),
+            ],
+        }
     }
     
     patchDocument(fs.readFileSync("template.docx"),{
@@ -84,7 +90,6 @@ exports.generateDocument = (data, callback) => {
         outputType: "nodebuffer",
         patches,
     }).then((doc) => {
-        console.log('doc:', doc);
         const docBuffer = Buffer.from(doc.buffer)
         // fs.writeFileSync("My Document.docx", doc);
         callback(docBuffer);
