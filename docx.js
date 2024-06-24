@@ -1,6 +1,6 @@
 const fs = require("fs");
 const docx = require("docx");
-const { patchDocument, PatchType, TextRun, CheckBox } = docx;
+const { patchDocument, PatchType, TextRun, Document, CheckBox, Paragraph, Table, TableCell, TableRow, Packer } = docx;
 
 exports.generateDocument = (data, callback) => {
     console.log(data);

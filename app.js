@@ -3,6 +3,8 @@ const cors = require('cors');
 const dotenv = require('dotenv');
 const multipart = require('connect-multiparty');
 const docxs = require('./docx');
+const xlsxs = require('./xlsx');
+const binconv = require('binconv');
 
 const multipartMiddleware = multipart();
 
@@ -20,29 +22,24 @@ const server = require('express')();
 
 server.use(cors());
 
-server.get('/presignedPutUrl', (req, res) => {
+server.get('/presignedPutUrl', async (req, res) => {
     // console.log('req:',req.query.name);
-    client.presignedPutObject('laravel', req.query.name, (err, url) => {
+    await client.presignedPutObject('laravel', req.query.name, (err, url) => {
         if (err) throw err
         res.end(url)
     })
 });
 
-
-server.get('/presignedGetUrl', (req, res) => {
+server.get('/presignedGetUrl', async (req, res) => {
     // console.log('req:',req.query.name);
-    client.presignedGetObject('laravel', req.query.name, (err, url) => {
+    await client.presignedGetObject('laravel', req.query.name, (err, url) => {
         if (err) throw err
         res.end(url)
     })
 });
 
-server.get('/', (req, res) => {
-    res.sendFile(__dirname + '/index.html');
-});
-
-server.post('/generateDocument', multipartMiddleware, (req, res) => {
-    docxs.generateDocument(req.body, (buffer)=>{
+server.post('/generateDocument', multipartMiddleware, async (req, res) => {
+    await docxs.generateDocument(req.body, (buffer)=>{
         const filePath = `docx/${Date.now()}_${req.body.contract_name}.docx`;
         client.putObject('laravel', filePath, buffer)
             .catch((err) => {
@@ -52,6 +49,44 @@ server.post('/generateDocument', multipartMiddleware, (req, res) => {
         res.writeHead(200, {'Content-Type': 'text/html;charset=utf-8'});
         res.end(filePath);
     });
+});
+
+server.post('/generateXlsx', multipartMiddleware, async (req, res) => {
+    console.log(req.body)
+    if (req.body.url) {
+        await client.removeObject('laravel', req.query.url);
+    }
+    const data = JSON.parse(req.body.data);
+    console.log('images:', req.body.images);
+    const images = req.body.images === '' ? null : req.body.images.split('&');
+
+    xlsxs.generateXlsx(data, images, async (buffer)=>{
+        const filePath =  req.body.url ? req.body.url : `xlsx/${Date.now()}.xlsx`;
+        await client.putObject('laravel', filePath, buffer)
+            .catch((err) => {
+                console.log('err:', err);
+            })
+        console.log(filePath);
+        res.writeHead(200, {'Content-Type': 'text/html;charset=utf-8'});
+        res.end(filePath);
+    });
+});
+
+server.post('/branchXlsx', multipartMiddleware, async (req, res) => {
+    await client.presignedGetObject('laravel', req.body.excel_url, (err, url) => {
+        console.log('url', url);
+        fetch(url, {
+            method: 'GET',
+        }).then(async (result) => {
+            console.log('result:', result);
+            await xlsxs.branchXlsx(result.body, req.body.signature, req.body.position, async (data)=>{
+                await client.removeObject('laravel', req.body.excel_url);
+                await client.putObject('laravel', req.body.excel_url, data, (result) => {
+                    console.log('result:', result);
+                })
+            })
+        })     
+    })
     
 });
 

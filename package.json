@@ -4,11 +4,14 @@
     "version": "0.0.1",
     "private": true,
     "dependencies": {
+        "binconv": "^0.2.0",
         "connect-multiparty": "^2.2.0",
         "cors": "^2.8.5",
         "docx": "^8.5.0",
         "dotenv": "^16.3.1",
+        "exceljs": "^4.4.0",
         "express": "4.x",
+        "lodash": "^4.17.21",
         "minio": "^7.1.3"
     }
 }
