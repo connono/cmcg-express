@@ -66,6 +66,7 @@ exports.branchXlsx = async (stream, signature, position, callback) => {
     }
 
     const buffer = await workbook.xlsx.writeBuffer();
+    console.log('buffer:', buffer)
     callback(buffer);
 }
 

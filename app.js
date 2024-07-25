@@ -10,12 +10,13 @@ const multipartMiddleware = multipart();
 
 dotenv.config({path: './.env'});
 
-var client = new Minio.Client({
+const client = new Minio.Client({
     endPoint: process.env.ENDPOINT,
     port: parseInt(process.env.MINIO_PORT),
     useSSL: false,
     accessKey: process.env.ACCESSKEY,
     secretKey: process.env.SECRETKEY,
+    region: 'cn-north-1',
 });
 
 const server = require('express')();
@@ -52,21 +53,20 @@ server.post('/generateDocument', multipartMiddleware, async (req, res) => {
 });
 
 server.post('/generateXlsx', multipartMiddleware, async (req, res) => {
-    console.log(req.body)
     if (req.body.url) {
         await client.removeObject('laravel', req.query.url);
     }
     const data = JSON.parse(req.body.data);
-    console.log('images:', req.body.images);
     const images = req.body.images === '' ? null : req.body.images.split('&');
 
-    xlsxs.generateXlsx(data, images, async (buffer)=>{
+    await xlsxs.generateXlsx(data, images, (buffer)=>{
         const filePath =  req.body.url ? req.body.url : `xlsx/${Date.now()}.xlsx`;
-        await client.putObject('laravel', filePath, buffer)
+        const string = "Hello, World!";
+        const buffer1 = Buffer.from(string, "utf8");
+        client.putObject('laravel', filePath, buffer1)
             .catch((err) => {
                 console.log('err:', err);
             })
-        console.log(filePath);
         res.writeHead(200, {'Content-Type': 'text/html;charset=utf-8'});
         res.end(filePath);
     });
@@ -74,15 +74,12 @@ server.post('/generateXlsx', multipartMiddleware, async (req, res) => {
 
 server.post('/branchXlsx', multipartMiddleware, async (req, res) => {
     await client.presignedGetObject('laravel', req.body.excel_url, (err, url) => {
-        console.log('url', url);
         fetch(url, {
             method: 'GET',
         }).then(async (result) => {
-            console.log('result:', result);
             await xlsxs.branchXlsx(result.body, req.body.signature, req.body.position, async (data)=>{
                 await client.removeObject('laravel', req.body.excel_url);
                 await client.putObject('laravel', req.body.excel_url, data, (result) => {
-                    console.log('result:', result);
                 })
             })
         })     
