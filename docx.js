@@ -3,6 +3,7 @@ const docx = require("docx");
 const { patchDocument, PatchType, TextRun, Document, CheckBox, Paragraph, Table, TableCell, TableRow, Packer } = docx;
 
 exports.generateDocument = (data, callback) => {
+    console.log('data:', data);
     const sourceArray = ['自筹资金', '财政拨款', '专项资金', '学科经费', '名医工作室'];
     const patches = {
         type: {
@@ -106,7 +107,7 @@ exports.generateDocument = (data, callback) => {
         comment: {
             type: PatchType.PARAGRAPH,
             children: [
-                new TextRun(data.comment),
+                new TextRun(data.comment ? data.comment : ''),
             ],
         }
    }
