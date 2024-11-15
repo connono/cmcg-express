@@ -1,9 +1,9 @@
 const fs = require("fs");
 const docx = require("docx");
 const { patchDocument, PatchType, TextRun, Document, CheckBox, Paragraph, Table, TableCell, TableRow, Packer } = docx;
+const _ = require('lodash');
 
 exports.generateDocument = (data, callback) => {
-    console.log('data:', data);
     const sourceArray = ['自筹资金', '财政拨款', '专项资金', '学科经费', '名医工作室'];
     const patches = {
         type: {
@@ -26,7 +26,7 @@ exports.generateDocument = (data, callback) => {
         },
         complement_code: {
           type: PatchType.PARAGRAPH,
-          children: [new TextRun({text: data.complement_code? data.complement_code : '       ', underline: {color: '#000000', type: 'single'}})]
+          children: [new TextRun({text: data.isComplement === 'true' && !_.isNull(data.complement_code) && !_.isUndefined(data.complement_code)? data.complement_code : '       ', underline: {color: '#000000', type: 'single'}})]
             
         },
         series_number: {
@@ -80,7 +80,11 @@ exports.generateDocument = (data, callback) => {
         },
         price: {
             type: PatchType.PARAGRAPH,
-            children: [new TextRun(data.price)],
+            children: [
+                new TextRun(data.price),
+                new TextRun(`  ${data.is_pay === 'true'? '☑' :'□' }付款`),
+                new TextRun(`  ${data.is_pay === 'false'? '☑' :'□' }收款`),
+            ],
         },
         isImportant: {
             type: PatchType.PARAGRAPH,
@@ -138,4 +142,4 @@ exports.generateDocument = (data, callback) => {
 //     dean_type: 'charge_dean',
 //     law_advice: 'written_request',
 //     comment: '这是一条评论',
-// });
+// },(buffer) => {console.log(buffer)});

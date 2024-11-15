@@ -1,7 +1,7 @@
 const ExcelJS = require('exceljs');
 const _  = require('lodash');
 
-exports.generateXlsx = async (data, images, callback) => {
+exports.generateXlsx = async (data, callback) => {
     const workbook = new ExcelJS.Workbook();
     await workbook.xlsx.readFile('templatee.xlsx');
     const worksheet = workbook.getWorksheet(1);
@@ -15,60 +15,60 @@ exports.generateXlsx = async (data, images, callback) => {
     _.map(data, (array, aIndex) => {
         _.map(array, (item, iIndex) => {
             let cell = worksheet.getCell(`${String.fromCharCode(65+iIndex)}${6+aIndex}`);
-            cell.value =  item ? item : '-';
+            cell.value =  !_.isNull(item) ? item : '-';
         });
     });
-    //循环渲染签名
-    signatureAnchors = [
-        {col: 0.3, row: 15},
-        {col: 1.3, row: 15},
-        {col: 4.3, row: 15},
-        {col: 8, row: 15},
-        {col: 9.2, row: 15},
-    ];
-    if(images && images.length && images.length != 0) {
-        _.map(images, (image, index) => {
-            let imageId = workbook.addImage({
-                base64: image,
-                extension: 'png',
-            });
-            worksheet.addImage(imageId, {
-                tl: signatureAnchors[index],
-                ext: {width: 80, height: 40}
-            });        
-        });        
-    }
+    // //循环渲染签名
+    // signatureAnchors = [
+    //     {col: 0.3, row: 15},
+    //     {col: 1.3, row: 15},
+    //     {col: 4.3, row: 15},
+    //     {col: 8, row: 15},
+    //     {col: 9.2, row: 15},
+    // ];
+    // if(images && images.length && images.length != 0) {
+    //     _.map(images, (image, index) => {
+    //         let imageId = workbook.addImage({
+    //             base64: image,
+    //             extension: 'png',
+    //         });
+    //         worksheet.addImage(imageId, {
+    //             tl: signatureAnchors[index],
+    //             ext: {width: 80, height: 40}
+    //         });        
+    //     });        
+    // }
 
     const buffer = await workbook.xlsx.writeBuffer();
     callback(buffer);
 }
 
-exports.branchXlsx = async (stream, signature, position, callback) => {
-    const workbook = new ExcelJS.Workbook();
-    await workbook.xlsx.read(stream);
-    const worksheet = workbook.getWorksheet(1);
-    signatureAnchors = [
-        {col: 0.3, row: 15},
-        {col: 1.3, row: 15},
-        {col: 4.3, row: 15},
-        {col: 8, row: 15},
-        {col: 9.2, row: 15},
-    ];
-    if (signature) {
-        let imageId = workbook.addImage({
-            base64: signature,
-            extension: 'png',
-        });
-        worksheet.addImage(imageId, {
-            tl: signatureAnchors[position],
-            ext: {width: 80, height: 40},
-        });
-    }
+// exports.branchXlsx = async (stream, signature, position, callback) => {
+//     const workbook = new ExcelJS.Workbook();
+//     await workbook.xlsx.read(stream);
+//     const worksheet = workbook.getWorksheet(1);
+//     // signatureAnchors = [
+//     //     {col: 0.3, row: 15},
+//     //     {col: 1.3, row: 15},
+//     //     {col: 4.3, row: 15},
+//     //     {col: 8, row: 15},
+//     //     {col: 9.2, row: 15},
+//     // ];
+//     // if (signature) {
+//     //     let imageId = workbook.addImage({
+//     //         base64: signature,
+//     //         extension: 'png',
+//     //     });
+//     //     worksheet.addImage(imageId, {
+//     //         tl: signatureAnchors[position],
+//     //         ext: {width: 80, height: 40},
+//     //     });
+//     // }
 
-    const buffer = await workbook.xlsx.writeBuffer();
-    console.log('buffer:', buffer)
-    callback(buffer);
-}
+//     const buffer = await workbook.xlsx.writeBuffer();
+//     // console.log('buffer:', buffer)
+//     callback(buffer);
+// }
 
 // const data = [
 //     ['杭州益众贸易有限公司', '呼吸机', 180000, '首款', '-', '-', 162000, 18000, '验收合格90工作日内付合同金额90%', '验收合格90工作日内支付90%，一年内支付剩余10%   (11月27日入库)'],
